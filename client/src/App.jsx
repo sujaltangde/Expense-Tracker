@@ -6,10 +6,36 @@ import { Route, Routes } from 'react-router-dom'
 import { Login } from './pages/Login';
 import { Register } from './pages/Register';
 import { Home } from './pages/Home';
-
+import { useDispatch, useSelector } from 'react-redux';
+import { logOrNot, userDetails } from './actions/UserActions';
+import { Analytics } from './pages/Analytics';
 
 
 function App() {
+
+
+
+  const dispatch = useDispatch()
+
+
+  const { isLogin } = useSelector(state => state.user)
+
+
+  useEffect(() => {
+
+    dispatch(userDetails());
+
+  }, [dispatch, isLogin]);
+
+
+  useEffect(() => {
+    const LogOrNot = () => {
+      dispatch(logOrNot());
+      // dispatch(getAllJobs())
+    }
+    LogOrNot()
+
+  }, []);
 
 
   return (
@@ -18,9 +44,10 @@ function App() {
 
       <Routes>
 
-        <Route path="/" element={<Home/>} />
-        <Route path="/login" element={<Login/>} />
-        <Route path="/register" element={<Register/>} />
+        <Route path="/" element={<Home />} />
+        <Route path="/login" element={<Login />} />
+        <Route path="/register" element={<Register />} />
+        <Route path="/analytics" element={<Analytics />} />
 
       </Routes>
 
@@ -37,7 +64,7 @@ function App() {
         pauseOnFocusLoss
         draggable
         pauseOnHover
-        theme="dark"
+        theme="light"
         className="mt-14 font-bold  "
 
       />

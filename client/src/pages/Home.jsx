@@ -1,17 +1,29 @@
-import React, { useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import { toast } from 'react-toastify'
 import { FiSearch } from 'react-icons/fi'
-import { LiaRupeeSignSolid } from 'react-icons/lia'
+import { RxCross2 } from 'react-icons/rx'
 import { TransactionCard } from '../components/TransactionCard';
+import { useSelector, useDispatch } from 'react-redux';
+import { useNavigate } from 'react-router';
+import { getAllTransactions, makeTransaction } from '../actions/TransactionActions';
+import { BiLoaderAlt } from 'react-icons/bi'
+
 
 
 export const Home = () => {
 
+    const dispatch = useDispatch();
+    const { isLogin } = useSelector(state => state.user)
+    const navigate = useNavigate();
+    const [transactions, setTransactions] = useState([])
+    const { allTransactions, loading } = useSelector(state => state.transaction)
 
     const [amount, setAmount] = useState(0);
     const [description, setDescription] = useState("")
-
+    const [date, setDate] = useState("")
     const [category, setCategory] = useState("");
+
+    const [searchKey, setSearchKey] = useState("")
 
     const addTransHandler = (e) => {
         e.preventDefault();
@@ -19,19 +31,63 @@ export const Home = () => {
         if (amount == 0) {
             toast.info("Add value greater than 0 !")
         } else {
-            console.log({
-                amount,
+            const data = {
+                amount: parseInt(amount),
                 description,
-                category
-            })
+                category,
+                createdAt: date
+            }
+
+            dispatch(makeTransaction(data))
 
             setAmount(0);
             setCategory("")
             setDescription("")
+            setDate("")
         }
-
-
     }
+
+
+    const search = () => {
+        const searchArr = transactions.filter((e) => (
+            e.description.toLowerCase().includes(searchKey.toLowerCase().trim())
+        ))
+
+        if (searchKey === "") {
+            const reversedTransactions = [...allTransactions].reverse();
+            setTransactions(reversedTransactions)
+        } else {
+
+            setTransactions(searchArr)
+        }
+    }
+
+
+
+
+    useEffect(() => {
+        if (isLogin === false) {
+            navigate("/login")
+        }
+    }, [isLogin])
+
+
+
+
+    useEffect(() => {
+        const call = () => {
+            dispatch(getAllTransactions())
+            const reversedTransactions = [...allTransactions].reverse();
+            setTransactions(reversedTransactions)
+        }
+        call();
+        search()
+
+    }, [allTransactions, searchKey])
+
+
+
+
 
     return (
         <>
@@ -39,9 +95,9 @@ export const Home = () => {
 
                 <div className='flex flex-col justify-start items-start '>
 
-                    <div className='w-full flex md:justify-between justify-start md:flex-row flex-col'>
+                    <div className='w-full flex justify-center  md:flex-row flex-col'>
 
-                        <div className='pt-2 px-3 pb-4  md:w-1/2 w-full '>
+                        <div className='px-3 pb-4 pt-4   md:w-1/2 w-full '>
                             <div className='pb-3'>
                                 <p className='text-2xl'>Add Transactions</p>
                             </div>
@@ -63,58 +119,66 @@ export const Home = () => {
                                 </div>
 
 
-                                <div className=' flex gap-8 pt-2 px-3 pb-2'>
+                                <div className=' flex flex-wrap gap-8 pt-2 px-3 pb-2'>
                                     <div className='flex gap-1 text-lg font-medium  justify-center items-center'>
                                         <input checked={category === "expense"} value="expense" onChange={(e) => setCategory(e.target.value)} name='amount' type="radio" className='cursor-pointer' /> Expense</div>
                                     <div className='flex gap-1  text-lg font-medium justify-center items-center'>
                                         <input checked={category === "income"} value="income" onChange={(e) => setCategory(e.target.value)} name='amount' type="radio" className='cursor-pointer' /> Income</div>
+
+                                    <div>
+                                        <input onChange={(e) => setDate(e.target.value)} required value={date} type="date" name="" className='cursor-pointer' id="" />
+                                    </div>
                                 </div>
-                                <div className='md:w-1/2'>
-                                    <button className='bg-blue-800 hover:bg-blue-900  px-6 text-white font-semibold py-2 w-full'>Add Transaction</button>
+                                <div className=''>
+                                    <button disabled={loading} className='bg-blue-800 flex justify-center items-center hover:bg-blue-900  px-6 text-white font-semibold py-2 w-full'>{loading ? <BiLoaderAlt className='animate-spin' size={24} /> : "Add Transaction"}</button>
                                 </div>
                             </form>
                         </div>
-                        <div className='flex justify-center md:w-1/2 w-full '>
-                            <div className='py-6 flex flex-col gap-4'>
-                                
-                                <div className='border py-3 px-20 bg-blue-700 text-white  '>
-                                        <div className='flex justify-center items-center gap-3'>Balance: <span className='flex justify-center items-center'><LiaRupeeSignSolid/>56000</span></div>
-                                </div>
-                                <div className='border py-3 px-7 bg-blue-700  text-white  '>
-                                        <div className='flex justify-center  items-center gap-3'>Expenses: <span className='flex justify-center items-center'><LiaRupeeSignSolid/>56000</span></div>
-                                </div>
-                                <div className='border py-3 px-7 bg-blue-700 text-white  '>
-                                        <div className='flex justify-center items-center gap-3'>Income: <span className='flex justify-center items-center'><LiaRupeeSignSolid/>56000</span></div>
-                                </div>
-                                
 
-                            </div>
-
-                        </div>
 
 
 
                     </div>
-                    <div className='px-3 border-t border-gray-300 w-full'>
-                        <div className='pt-2 pb-3'>
-                            <p className='text-2xl'>Transactions</p>
-                        </div>
-                        <div className='pt-2 pb-3 '>
-                            <div className='border border-gray-500 flex items-center pl-2 md:w-1/2 w-full'>
-                                <FiSearch />
-                                <input type="text" placeholder='Search' className='px-3 outline-none  w-full  py-2  ' name="" id="" />
+                    <div className='flex justify-center items-center w-full'>
+                        <div className='px-3 border-t border-gray-300 md:w-1/2 w-full'>
+                            <div className='pt-2 pb-3'>
+                                <p className='text-2xl'>Transactions</p>
                             </div>
-                        </div>
-                        <div className='border-t border-gray-300'>
+                            <div className='pt-2 pb-3 '>
+                                {/*  Search Functionality  */}
+                                {allTransactions.length !== 0 && <div className='border pr-2 border-gray-500 flex items-center pl-2  w-full'>
+                                    <FiSearch />
+                                    <input value={searchKey} onChange={(e) => setSearchKey(e.target.value)} type="text" placeholder='Search' className='px-3 outline-none  w-full  py-2  ' name="" id="" />
+                                    <RxCross2 onClick={() => setSearchKey("")} size={19} className={`cursor-pointer
+                    ${searchKey.length !== 0 ? "flex" : "hidden"}
+                     `} />
+                                </div>}
+                            </div>
+                            <div className='border-t border-gray-300'>
 
-                        </div>
-                        <div className='pt-4 flex flex-col gap-3 pb-12'>
+                            </div>
+                            <div className='pt-4 flex flex-col gap-3 pb-12'>
 
-                            <TransactionCard />
-                            <TransactionCard />
-                            <TransactionCard />
+                                {
+
+                            transactions.length !== 0 ? 
+
+                                    transactions.map((ele, i) => (
+                                        <TransactionCard transaction={ele} key={i} />
+                                    ))
+
+                                    : 
+                                    <>
+
+                                        <p className='text-center'>No Transactions...</p>
+                                    
+                                    </>
+
+                                }
 
 
+
+                            </div>
                         </div>
                     </div>
 

@@ -13,3 +13,38 @@
 /* font-family: 'Roboto', sans-serif; */
 /* font-family: 'Ubuntu', sans-serif;  */
 }
+
+
+
+
+.loader {
+    width: 16px;
+    height: 16px;
+    border-radius: 50%;
+    display: block;
+    margin:15px auto;
+    position: relative;
+    background: #FFF;
+    box-shadow: -24px 0 #FFF, 24px 0 #FFF;
+    box-sizing: border-box;
+    animation: shadowPulse 2s linear infinite;
+  }
+  
+  @keyframes shadowPulse {
+    33% {
+      background: #dfdfdf;
+      box-shadow: -24px 0 blue, 24px 0 #dfdfdf;
+    }
+    66% {
+      background: blue;
+      box-shadow: -24px 0 #dfdfdf, 24px 0 #dfdfdf;
+    }
+    100% {
+      background: #dfdfdf;
+      box-shadow: -24px 0 #dfdfdf, 24px 0 blue;
+    }
+  }
+  
+
+
+  

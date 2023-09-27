@@ -7,6 +7,14 @@ const UserSlice = createSlice({
         loading: false,
         error: null,
         isLogin: false,
+        userDetailsData: {
+            name: "",
+            email: "",
+            balance: 0,
+            expense: 0,
+            income: 0,
+            createdAt: ""
+        }
     },
     reducers: {
         registerRequest: (state) => {
@@ -37,24 +45,47 @@ const UserSlice = createSlice({
         },
         isLoginSuccess: (state, action) => {
             state.isLogin = action.payload
-
         },
-        isLoginFail: (state, action) => {
+        isLoginFail: (state) => {
             state.isLogin = false
         },
 
 
+        userDetailsRequest: (state) => {
+            state.loading = true;
+        },
+        userDetailsSuccess: (state, action) => {
+            state.loading = false;
+            state.userDetailsData = action.payload
+        },
+        userDetailsFail: (state, action) => {
+            state.loading = false;
+            state.error = action.payload
+        },
 
+
+        logOutClearState: (state) => {
+            state.userDetailsData = {
+                name: "",
+                email: "",
+                balance: 0,
+                expense: 0,
+                income: 0,
+                createdAt: ""
+            }
+        }
 
     }
 })
 
 
 
-export const { 
+export const {
     registerRequest, registerSuccess, registerFail,
     loginRequest, loginSuccess, loginFail
-    ,isLoginRequest, isLoginSuccess, isLoginFail
+    , isLoginRequest, isLoginSuccess, isLoginFail,
+    userDetailsRequest, userDetailsSuccess, userDetailsFail,
+    logOutClearState
 } = UserSlice.actions
 
 export default UserSlice.reducer
